@@ -1,0 +1,104 @@
+<configuration>
+
+    <!-- 设置日志输出的模式，%d是日期，%p是日志级别，%c是类名，%m是日志内容，%n是换行符 -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss:SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="LOG_DIR" value="./logs"/>
+    <property name="ARCHIVE_DIR" value="./archive"/>
+
+    <!-- 控制台输出配置 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 配置 ALL 日志 -->
+    <appender name="ALL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/all.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${ARCHIVE_DIR}/%d{yyyy-MM}/all-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>12</maxHistory>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 配置 DEBUG 日志 -->
+    <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/debug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${ARCHIVE_DIR}/%d{yyyy-MM}/debug-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>12</maxHistory>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 配置 INFO 日志 -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${ARCHIVE_DIR}/%d{yyyy-MM}/info-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>12</maxHistory>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 配置 WARN 日志 -->
+    <appender name="WARN_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/warn.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${ARCHIVE_DIR}/%d{yyyy-MM}/warn-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>12</maxHistory>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 配置 ERROR 日志 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${ARCHIVE_DIR}/%d{yyyy-MM}/error-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>12</maxHistory>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 配置日志级别 -->
+    <root level="debug">
+        <appender-ref ref="CONSOLE"/>"
+        <appender-ref ref="ALL_FILE"/>
+        <appender-ref ref="DEBUG_FILE"/>
+        <appender-ref ref="INFO_FILE"/>
+        <appender-ref ref="WARN_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </root>
+
+    <!-- 单独配置不同日志级别的日志输出 -->
+    <logger name="com.example.debug" level="debug">
+        <appender-ref ref="DEBUG_FILE"/>
+    </logger>
+    <logger name="com.example.info" level="info">
+        <appender-ref ref="INFO_FILE"/>
+    </logger>
+    <logger name="com.example.warn" level="warn">
+        <appender-ref ref="WARN_FILE"/>
+    </logger>
+    <logger name="com.example.error" level="error">
+        <appender-ref ref="ERROR_FILE"/>
+    </logger>
+
+</configuration>
