@@ -1,5 +1,7 @@
 package com.yang.video.controller;
 
+import com.yang.video.service.VideoService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,17 +10,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-
 @Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/video")
 public class VideoController {
 
+    private final VideoService videoService;
+
     // 定义文件上传接口
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
 
         log.debug("文件上传开始");
 
@@ -27,32 +29,15 @@ public class VideoController {
             return ResponseEntity.badRequest().body("文件为空，请选择一个视频文件上传");
         }
 
-        // 获取文件原始名称
-        String fileName = file.getOriginalFilename();
-        if (fileName == null) {
-            log.warn("上传文件时发生错误");
-            return ResponseEntity.badRequest().body("上传文件时发生错误");
+        // 限制文件大小，文件超过100M时拒绝上传
+        if (file.getSize() > 1024 * 1024 * 100) {
+            log.warn("文件大小超过100M，请选择一个较小的视频文件上传");
+            return ResponseEntity.badRequest().body("文件大小超过100M，请选择一个较小的视频文件上传");
         }
 
-        // 设置上传文件的保存路径，这里保存到项目的根目录
-        String uploadDir = System.getProperty("user.dir") + "/uploads/";
-        File directory = new File(uploadDir);
-        if (!directory.exists()) {
-            // 创建目录
-            directory.mkdirs();
-        }
+        String newFilename = videoService.upload(file);
 
-        // 保存文件
-        File destFile = new File(uploadDir + fileName);
-        try {
-            // 保存文件到指定路径
-            file.transferTo(destFile);
-        } catch (IOException e) {
-            log.error("上传文件时发生错误: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body("上传文件失败: " + e.getMessage());
-        }
-
-        log.info("文件上传成功，文件名：{}", fileName);
-        return ResponseEntity.ok("文件上传成功，文件名：" + fileName);
+        log.info("文件上传成功，文件名：{}", newFilename);
+        return ResponseEntity.ok("文件上传成功，文件名：" + newFilename);
     }
 }
