@@ -1,7 +1,6 @@
 package com.yang.video.controller;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,19 +11,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 
-//@Slf4j
+@Slf4j
 @RestController
 @RequestMapping("/api/video")
 public class VideoController {
-
-    private static final Logger log = LogManager.getLogger(VideoController.class);
 
     // 定义文件上传接口
     @PostMapping("/upload")
     public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {
 
         log.debug("文件上传开始");
-        
+
         if (file.isEmpty()) {
             log.warn("文件为空，请选择一个视频文件上传");
             return ResponseEntity.badRequest().body("文件为空，请选择一个视频文件上传");
