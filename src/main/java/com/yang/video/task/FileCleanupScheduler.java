@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 
@@ -16,7 +15,7 @@ import java.time.Instant;
 @Component
 public class FileCleanupScheduler {
     // 指定要清理的目录
-    private static final String DIRECTORY_PATH = Paths.get(System.getProperty("user.dir"), "uploads").toString();
+    private static final String DIRECTORY_PATH = System.getProperty("user.dir") + File.separator + "uploads";
     // 1 天
     private static final int DAYS_THRESHOLD = 1;
 
