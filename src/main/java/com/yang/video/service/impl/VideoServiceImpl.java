@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,9 @@ public class VideoServiceImpl implements VideoService {
         }
 
         // 返回文件的下载路径
-        return ServletUriComponentsBuilder.fromCurrentServletMapping().path("/api/video/download/").path(newFileName).toUriString();
+        return UriComponentsBuilder.fromUriString(ServletUriComponentsBuilder.fromCurrentServletMapping().toUriString()).path("/api/video/download")
+                .queryParam("filename", newFileName)
+                .toUriString();
     }
 
     private boolean isValidVideoFile(String filename) {
