@@ -128,7 +128,7 @@
         <appender-ref ref="ERROR_FILE"/>
     </root>
 
-    <logger name="taskLog" level="INFO" additivity="false">
+    <logger name="com.yang.video.task" level="INFO" additivity="false">
         <appender-ref ref="TASK_FILE"/>
     </logger>
 
