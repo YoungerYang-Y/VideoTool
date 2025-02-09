@@ -5,6 +5,7 @@ import com.yang.video.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,9 @@ public class VideoServiceImpl implements VideoService {
             log.error("上传文件时发生错误: {}", e.getMessage(), e);
             throw new ServiceException(500, "上传文件失败: " + e.getMessage());
         }
-        return newFileName;
+
+        // 返回文件的下载路径
+        return ServletUriComponentsBuilder.fromCurrentServletMapping().path("/api/video/download").toUriString();
     }
 
     private boolean isValidVideoFile(String filename) {
