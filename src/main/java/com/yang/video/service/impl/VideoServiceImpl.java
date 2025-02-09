@@ -15,9 +15,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+/**
+ * VideoServiceImpl类实现了VideoService接口，提供视频上传和下载的服务
+ */
 @Slf4j
 @Service
 public class VideoServiceImpl implements VideoService {
+    /**
+     * 上传视频文件
+     *
+     * @param file 要上传的视频文件
+     * @return 返回上传成功后的文件下载路径
+     * @throws ServiceException 如果文件上传过程中发生错误或文件格式不正确，则抛出此异常
+     */
     @Override
     public String upload(MultipartFile file) {
         // 获取文件原始名称
@@ -39,7 +49,9 @@ public class VideoServiceImpl implements VideoService {
             }
         }
 
+        // 获取文件扩展名
         String fileExtension = getFileExtension(originalFilename);
+        // 生成新的文件名，使用UUID以避免文件名冲突
         String newFileName = UUID.randomUUID() + "." + fileExtension;
 
         // 保存文件
@@ -59,6 +71,12 @@ public class VideoServiceImpl implements VideoService {
                 .toUriString();
     }
 
+    /**
+     * 检查文件是否是允许的视频文件格式
+     *
+     * @param filename 文件名
+     * @return 如果文件格式符合允许的视频格式，则返回true；否则返回false
+     */
     private boolean isValidVideoFile(String filename) {
         // 验证文件扩展名是否为允许的视频格式
         String[] allowedExtensions = {"mp4", "avi", "mkv"};
@@ -71,6 +89,12 @@ public class VideoServiceImpl implements VideoService {
         return false;
     }
 
+    /**
+     * 获取文件扩展名
+     *
+     * @param filename 文件名
+     * @return 文件的扩展名如果文件没有扩展名，则返回空字符串
+     */
     private String getFileExtension(String filename) {
         int lastDotIndex = filename.lastIndexOf(".");
         if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
