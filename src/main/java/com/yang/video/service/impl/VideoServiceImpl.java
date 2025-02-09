@@ -53,7 +53,7 @@ public class VideoServiceImpl implements VideoService {
         }
 
         // 返回文件的下载路径
-        return ServletUriComponentsBuilder.fromCurrentServletMapping().path("/api/video/download").toUriString();
+        return ServletUriComponentsBuilder.fromCurrentServletMapping().path("/api/video/download/").path(newFileName).toUriString();
     }
 
     private boolean isValidVideoFile(String filename) {
