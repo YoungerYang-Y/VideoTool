@@ -29,8 +29,12 @@ public class VideoServiceImpl implements VideoService {
         Path uploadDir = Paths.get(System.getProperty("user.dir"), "uploads");
         File directory = uploadDir.toFile();
         if (!directory.exists()) {
-            // 创建目录
-            directory.mkdirs();
+            // 创建目录并检查是否成功
+            boolean created = directory.mkdirs();
+            if (!created) {
+                log.error("创建上传目录失败: {}", uploadDir);
+                throw new ServiceException(500, "创建上传目录失败: " + uploadDir);
+            }
         }
 
         String fileExtension = getFileExtension(originalFilename);
