@@ -1,6 +1,7 @@
 package com.yang.video.controller;
 
 import com.yang.video.service.VideoService;
+import com.yang.video.util.FileNameValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -16,7 +17,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Semaphore;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,9 +28,6 @@ public class VideoController {
 
     private static final String FILE_DIRECTORY = System.getProperty("user.dir") + File.separator + "uploads";
 
-    // 限制最多 3 个并发请求
-    private final Semaphore semaphore = new Semaphore(3);
-
     /**
      * 文件上传
      *
@@ -39,35 +36,17 @@ public class VideoController {
      */
     @PostMapping("/upload")
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
+        log.debug("文件上传开始");
 
-        if (!semaphore.tryAcquire()) {
-            return ResponseEntity.badRequest().body("服务器繁忙，请稍后重试！");
+        if (file.isEmpty()) {
+            log.warn("文件为空，请选择一个视频文件上传");
+            return ResponseEntity.badRequest().body("文件为空，请选择一个视频文件上传");
         }
 
-        try {
-            log.debug("文件上传开始");
+        String newFilename = videoService.upload(file);
 
-            if (file.isEmpty()) {
-                log.warn("文件为空，请选择一个视频文件上传");
-                return ResponseEntity.badRequest().body("文件为空，请选择一个视频文件上传");
-            }
-
-            // 限制文件大小，文件超过100M时拒绝上传
-            if (file.getSize() > 1024 * 1024 * 100) {
-                log.warn("文件大小超过100M，请选择一个较小的视频文件上传");
-                return ResponseEntity.badRequest().body("文件大小超过100M，请选择一个较小的视频文件上传");
-            }
-
-            String newFilename = videoService.upload(file);
-
-            log.info("文件上传成功，文件名：{}", newFilename);
-            return ResponseEntity.ok("文件上传成功，文件名：" + newFilename);
-        } catch (Exception e) {
-            log.error("文件上传失败", e);
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } finally {
-            semaphore.release();
-        }
+        log.info("文件上传成功，文件名：{}", newFilename);
+        return ResponseEntity.ok("文件上传成功，文件名：" + newFilename);
     }
 
     /**
@@ -81,7 +60,7 @@ public class VideoController {
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadFile(@RequestParam String filename) {
         // 检查文件名是否合法
-        if (!isValidFilename(filename)) {
+        if (!FileNameValidator.isValidFilename(filename)) {
             log.warn("Invalid filename: {}", filename);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -106,22 +85,6 @@ public class VideoController {
             log.warn("Invalid URL: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-    }
-
-    private boolean isValidFilename(String filename) {
-        // 不能为空
-        if (filename == null || filename.trim().isEmpty()) {
-            return false;
-        }
-
-        // 禁止目录遍历攻击
-        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
-            return false;
-        }
-
-        // 仅允许字母、数字、常见符号（防止特殊字符注入）
-        String regex = "^[a-zA-Z0-9._-]+$";
-        return filename.matches(regex);
     }
 
 }

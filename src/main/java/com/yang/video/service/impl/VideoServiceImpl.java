@@ -1,7 +1,9 @@
 package com.yang.video.service.impl;
 
+import cn.hutool.core.io.FileUtil;
 import com.yang.video.exception.ServiceException;
 import com.yang.video.service.VideoService;
+import com.yang.video.util.FileNameValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,7 +34,9 @@ public class VideoServiceImpl implements VideoService {
     public String upload(MultipartFile file) {
         // 获取文件原始名称
         String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null || !isValidVideoFile(originalFilename)) {
+        // 获取文件扩展名
+        String fileExtension = FileUtil.extName(originalFilename);
+        if (originalFilename == null || !FileNameValidator.isValidVideoFile(fileExtension)) {
             log.warn("上传文件时发生错误或文件格式不正确");
             throw new ServiceException(400, "上传文件时发生错误或文件格式不正确");
         }
@@ -49,10 +53,8 @@ public class VideoServiceImpl implements VideoService {
             }
         }
 
-        // 获取文件扩展名
-        String fileExtension = getFileExtension(originalFilename);
         // 生成新的文件名，使用UUID以避免文件名冲突
-        String newFileName = UUID.randomUUID() + "." + fileExtension;
+        String newFileName = UUID.randomUUID() + File.separator + fileExtension;
 
         // 保存文件
         Path destFilePath = uploadDir.resolve(newFileName);
@@ -71,35 +73,4 @@ public class VideoServiceImpl implements VideoService {
                 .toUriString();
     }
 
-    /**
-     * 检查文件是否是允许的视频文件格式
-     *
-     * @param filename 文件名
-     * @return 如果文件格式符合允许的视频格式，则返回true；否则返回false
-     */
-    private boolean isValidVideoFile(String filename) {
-        // 验证文件扩展名是否为允许的视频格式
-        String[] allowedExtensions = {"mp4", "avi", "mkv"};
-        String extension = getFileExtension(filename).toLowerCase();
-        for (String ext : allowedExtensions) {
-            if (ext.equals(extension)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * 获取文件扩展名
-     *
-     * @param filename 文件名
-     * @return 文件的扩展名如果文件没有扩展名，则返回空字符串
-     */
-    private String getFileExtension(String filename) {
-        int lastDotIndex = filename.lastIndexOf(".");
-        if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
-            return "";
-        }
-        return filename.substring(lastDotIndex + 1);
-    }
 }
