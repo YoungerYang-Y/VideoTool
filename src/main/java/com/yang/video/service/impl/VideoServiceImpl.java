@@ -1,6 +1,8 @@
 package com.yang.video.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.text.StrPool;
 import com.yang.video.exception.ServiceException;
 import com.yang.video.service.VideoService;
 import com.yang.video.util.FileNameValidator;
@@ -42,7 +44,7 @@ public class VideoServiceImpl implements VideoService {
         }
 
         // 设置上传文件的保存路径，这里保存到项目的根目录
-        Path uploadDir = Paths.get(System.getProperty("user.dir"), "uploads");
+        Path uploadDir = Paths.get(System.getProperty("user.dir"), "uploads", DateUtil.today());
         File directory = uploadDir.toFile();
         if (!directory.exists()) {
             // 创建目录并检查是否成功
@@ -54,7 +56,7 @@ public class VideoServiceImpl implements VideoService {
         }
 
         // 生成新的文件名，使用UUID以避免文件名冲突
-        String newFileName = UUID.randomUUID() + File.separator + fileExtension;
+        String newFileName = DateUtil.today() + StrPool.UNDERLINE + UUID.randomUUID() + File.separator + fileExtension;
 
         // 保存文件
         Path destFilePath = uploadDir.resolve(newFileName);
