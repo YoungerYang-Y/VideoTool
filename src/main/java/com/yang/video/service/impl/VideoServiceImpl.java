@@ -2,9 +2,11 @@ package com.yang.video.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrPool;
 import com.yang.video.exception.ServiceException;
 import com.yang.video.service.VideoService;
+import com.yang.video.util.FFmpegUtils;
 import com.yang.video.util.FileNameValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,7 @@ public class VideoServiceImpl implements VideoService {
         }
 
         // 生成新的文件名，使用UUID以避免文件名冲突
-        String newFileName = DateUtil.today() + StrPool.UNDERLINE + UUID.randomUUID() + File.separator + fileExtension;
+        String newFileName = DateUtil.today() + StrPool.UNDERLINE + UUID.randomUUID() + StrPool.DOT + fileExtension;
 
         // 保存文件
         Path destFilePath = uploadDir.resolve(newFileName);
@@ -69,10 +71,28 @@ public class VideoServiceImpl implements VideoService {
             throw new ServiceException(500, "上传文件失败: " + e.getMessage());
         }
 
+        getBGM(destFilePath.toFile());
+
         // 返回文件的下载路径
-        return UriComponentsBuilder.fromUriString(ServletUriComponentsBuilder.fromCurrentServletMapping().toUriString()).path("/api/video/download")
-                .queryParam("filename", newFileName)
-                .toUriString();
+        return UriComponentsBuilder.fromUriString(ServletUriComponentsBuilder.fromCurrentServletMapping().toUriString()).path("/api/video/download").queryParam("filename", newFileName).toUriString();
+    }
+
+    /**
+     * 通过FFmpeg获取背景音乐
+     */
+    @Override
+    public void getBGM(File inputVideoFile) {
+        String outputAudioFilePath = CharSequenceUtil.subBefore(inputVideoFile.getPath(), StrPool.DOT, true) + StrPool.DOT + "mp3";
+        File outputAudioFile = FileUtil.newFile(outputAudioFilePath);
+        try {
+            FFmpegUtils.extractBGM(inputVideoFile, outputAudioFile);
+        } catch (IOException | InterruptedException e) {
+            log.error(e.getMessage(), e);
+            // 保留中断状态
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
 }
