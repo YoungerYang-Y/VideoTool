@@ -8,3 +8,7 @@
 - [ ] Extract background music from video
 - [ ] Background music Download
 - [ ] Get video from Dou-yin or other application
+
+## Swagger
+
+> 启动应用后，访问 Swagger UI：http://localhost:8080/swagger-ui/index.html

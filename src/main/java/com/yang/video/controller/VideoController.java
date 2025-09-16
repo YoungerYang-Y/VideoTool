@@ -2,6 +2,12 @@ package com.yang.video.controller;
 
 import com.yang.video.service.VideoService;
 import com.yang.video.util.FileNameValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -22,6 +28,7 @@ import java.nio.file.Paths;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/video")
+@Tag(name = "视频接口", description = "视频上传与下载接口")
 public class VideoController {
 
     private final VideoService videoService;
@@ -35,7 +42,13 @@ public class VideoController {
      * @return 文件名
      */
     @PostMapping("/upload")
-    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
+    @Operation(summary = "上传视频文件", description = "上传单个视频文件，返回重命名后的文件名")
+    @ApiResponse(responseCode = "200", description = "上传成功",
+            content = @Content(mediaType = "text/plain", schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "400", description = "文件为空或非法")
+    public ResponseEntity<String> upload(
+            @Parameter(description = "要上传的视频文件", required = true)
+            @RequestParam("file") MultipartFile file) {
         log.debug("文件上传开始");
 
         if (file.isEmpty()) {
@@ -58,7 +71,14 @@ public class VideoController {
      * @return 包含文件的响应体如果请求的文件名不合法或文件不可用，则返回错误响应
      */
     @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam String filename) {
+    @Operation(summary = "下载视频文件", description = "根据文件名下载已上传的视频文件")
+    @ApiResponse(responseCode = "200", description = "下载成功",
+            content = @Content(mediaType = "application/octet-stream"))
+    @ApiResponse(responseCode = "400", description = "文件名不合法")
+    @ApiResponse(responseCode = "404", description = "文件不存在")
+    public ResponseEntity<Resource> downloadFile(
+            @Parameter(description = "要下载的文件名", required = true, example = "video_123.mp4")
+            @RequestParam String filename) {
         // 检查文件名是否合法
         if (!FileNameValidator.isValidFilename(filename)) {
             log.warn("Invalid filename: {}", filename);
