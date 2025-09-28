@@ -1,6 +1,7 @@
 package com.yang.video.controller;
 
 import com.yang.video.dto.Response;
+import com.yang.video.dto.UploadResponse;
 import com.yang.video.service.VideoService;
 import com.yang.video.util.FileNameValidator;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +48,7 @@ public class VideoController {
     @ApiResponse(responseCode = "200", description = "上传成功",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = Response.class)))
     @ApiResponse(responseCode = "400", description = "文件为空或非法")
-    public ResponseEntity<Response<String>> upload(
+    public ResponseEntity<Response<UploadResponse>> upload(
             @Parameter(description = "要上传的视频文件", required = true)
             @RequestParam("file") MultipartFile file) {
         log.debug("文件上传开始");
@@ -57,10 +58,10 @@ public class VideoController {
             return ResponseEntity.badRequest().body(Response.error(400, "文件为空，请选择一个视频文件上传"));
         }
 
-        String newFilename = videoService.upload(file);
+        UploadResponse uploadResponse = videoService.upload(file);
 
-        log.info("文件上传成功，文件名：{}", newFilename);
-        return ResponseEntity.ok(Response.success("文件上传成功，文件名：" + newFilename, newFilename));
+        log.info("文件上传成功，文件名：{}", uploadResponse.getFilename());
+        return ResponseEntity.ok(Response.success("文件上传成功", uploadResponse));
     }
 
     /**

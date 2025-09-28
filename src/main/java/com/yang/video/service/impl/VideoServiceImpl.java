@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrPool;
+import com.yang.video.dto.UploadResponse;
 import com.yang.video.exception.ServiceException;
 import com.yang.video.service.VideoService;
 import com.yang.video.util.FFmpegUtils;
@@ -29,11 +30,11 @@ public class VideoServiceImpl implements VideoService {
      * 上传视频文件
      *
      * @param file 要上传的视频文件
-     * @return 返回上传成功后的文件名
+     * @return 返回上传成功后的响应信息
      * @throws ServiceException 如果文件上传过程中发生错误或文件格式不正确，则抛出此异常
      */
     @Override
-    public String upload(MultipartFile file) {
+    public UploadResponse upload(MultipartFile file) {
         // 获取文件原始名称
         String originalFilename = file.getOriginalFilename();
         // 获取文件扩展名
@@ -71,8 +72,11 @@ public class VideoServiceImpl implements VideoService {
 
         getBGM(destFilePath.toFile());
 
-        // 返回文件名，由前端拼接下载路径
-        return newFileName;
+        // 分离文件名和扩展名
+        String filenameWithoutExtension = CharSequenceUtil.subBefore(newFileName, StrPool.DOT, true);
+        
+        // 返回上传响应信息
+        return new UploadResponse(filenameWithoutExtension, "/api/video/download", fileExtension);
     }
 
     /**
