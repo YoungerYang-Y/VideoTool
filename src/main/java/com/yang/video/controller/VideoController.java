@@ -1,5 +1,6 @@
 package com.yang.video.controller;
 
+import com.yang.video.dto.Response;
 import com.yang.video.service.VideoService;
 import com.yang.video.util.FileNameValidator;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,27 +40,27 @@ public class VideoController {
      * 文件上传
      *
      * @param file 上传的文件
-     * @return 文件名
+     * @return 标准响应格式
      */
     @PostMapping("/upload")
     @Operation(summary = "上传视频文件", description = "上传单个视频文件，返回重命名后的文件名")
     @ApiResponse(responseCode = "200", description = "上传成功",
-            content = @Content(mediaType = "text/plain", schema = @Schema(implementation = String.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Response.class)))
     @ApiResponse(responseCode = "400", description = "文件为空或非法")
-    public ResponseEntity<String> upload(
+    public ResponseEntity<Response<String>> upload(
             @Parameter(description = "要上传的视频文件", required = true)
             @RequestParam("file") MultipartFile file) {
         log.debug("文件上传开始");
 
         if (file.isEmpty()) {
             log.warn("文件为空，请选择一个视频文件上传");
-            return ResponseEntity.badRequest().body("文件为空，请选择一个视频文件上传");
+            return ResponseEntity.badRequest().body(Response.error(400, "文件为空，请选择一个视频文件上传"));
         }
 
         String newFilename = videoService.upload(file);
 
         log.info("文件上传成功，文件名：{}", newFilename);
-        return ResponseEntity.ok("文件上传成功，文件名：" + newFilename);
+        return ResponseEntity.ok(Response.success("文件上传成功，文件名：" + newFilename, newFilename));
     }
 
     /**
@@ -76,13 +77,13 @@ public class VideoController {
             content = @Content(mediaType = "application/octet-stream"))
     @ApiResponse(responseCode = "400", description = "文件名不合法")
     @ApiResponse(responseCode = "404", description = "文件不存在")
-    public ResponseEntity<Resource> downloadFile(
+    public ResponseEntity<?> downloadFile(
             @Parameter(description = "要下载的文件名", required = true, example = "video_123.mp4")
             @RequestParam String filename) {
         // 检查文件名是否合法
         if (!FileNameValidator.isValidFilename(filename)) {
             log.warn("Invalid filename: {}", filename);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.badRequest().body(Response.error(400, "文件名不合法"));
         }
 
         try {
@@ -94,7 +95,7 @@ public class VideoController {
             // 检查文件是否存在且可读
             if (!resource.exists() || !resource.isReadable()) {
                 log.warn("File not found or not readable: {}", filePath);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Response.error(404, "文件不存在"));
             }
 
             // 设置响应头，以指示浏览器下载文件
@@ -103,7 +104,7 @@ public class VideoController {
         } catch (MalformedURLException e) {
             // 处理URL异常
             log.warn("Invalid URL: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Response.error(500, "服务器内部错误"));
         }
     }
 
