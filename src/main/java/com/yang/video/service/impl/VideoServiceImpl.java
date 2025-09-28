@@ -11,8 +11,6 @@ import com.yang.video.util.FileNameValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +29,7 @@ public class VideoServiceImpl implements VideoService {
      * 上传视频文件
      *
      * @param file 要上传的视频文件
-     * @return 返回上传成功后的文件下载路径
+     * @return 返回上传成功后的文件名
      * @throws ServiceException 如果文件上传过程中发生错误或文件格式不正确，则抛出此异常
      */
     @Override
@@ -73,8 +71,8 @@ public class VideoServiceImpl implements VideoService {
 
         getBGM(destFilePath.toFile());
 
-        // 返回文件的下载路径
-        return UriComponentsBuilder.fromUriString(ServletUriComponentsBuilder.fromCurrentServletMapping().toUriString()).path("/api/video/download").queryParam("filename", newFileName).toUriString();
+        // 返回文件名，由前端拼接下载路径
+        return newFileName;
     }
 
     /**
