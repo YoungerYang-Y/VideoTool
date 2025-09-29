@@ -42,7 +42,9 @@ COPY --from=builder /app/target/*.jar app.jar
 
 # 创建上传目录并设置权限
 RUN mkdir -p /app/uploads && \
-    chown -R appuser:appuser /app
+    chown -R appuser:appuser /app && \
+    chmod -R 755 /app && \
+    chmod 777 /app/uploads
 
 # 切换到非root用户
 USER appuser
