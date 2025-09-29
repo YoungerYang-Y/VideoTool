@@ -22,7 +22,7 @@ public class UploadResponse {
     private String url;
     
     /**
-     * 文件后缀
+     * BGM文件后缀
      */
     private String extension;
 }

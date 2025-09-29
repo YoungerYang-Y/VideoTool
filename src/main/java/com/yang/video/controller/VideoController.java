@@ -44,7 +44,7 @@ public class VideoController {
      * @return 标准响应格式
      */
     @PostMapping("/upload")
-    @Operation(summary = "上传视频文件", description = "上传单个视频文件，返回重命名后的文件名")
+    @Operation(summary = "上传视频文件", description = "上传单个视频文件，提取BGM并返回BGM文件信息")
     @ApiResponse(responseCode = "200", description = "上传成功",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = Response.class)))
     @ApiResponse(responseCode = "400", description = "文件为空或非法")
@@ -88,9 +88,21 @@ public class VideoController {
         }
 
         try {
-            // 构建文件路径并创建资源对象
-            Path filePath = Paths.get(FILE_DIRECTORY).resolve(filename).normalize();
-            log.debug("File path: {}", filePath);
+            // 从文件名中提取日期
+            String dateStr = FileNameValidator.extractDateFromFilename(filename);
+            Path filePath;
+            
+            if (dateStr != null) {
+                // 如果文件名包含日期，则按日期目录结构查找文件
+                // 文件路径：/uploads/2025-09-29/2025-09-29_772f9446-a9f9-4508-9f78-aa0e64222d81.mp3
+                filePath = Paths.get(FILE_DIRECTORY).resolve(dateStr).resolve(filename).normalize();
+                log.debug("File path with date directory: {}", filePath);
+            } else {
+                // 如果文件名不包含日期，则直接在根目录查找（向后兼容）
+                filePath = Paths.get(FILE_DIRECTORY).resolve(filename).normalize();
+                log.debug("File path in root directory: {}", filePath);
+            }
+            
             Resource resource = new UrlResource(filePath.toUri());
 
             // 检查文件是否存在且可读

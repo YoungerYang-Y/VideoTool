@@ -75,8 +75,8 @@ public class VideoServiceImpl implements VideoService {
         // 分离文件名和扩展名
         String filenameWithoutExtension = CharSequenceUtil.subBefore(newFileName, StrPool.DOT, true);
         
-        // 返回上传响应信息
-        return new UploadResponse(filenameWithoutExtension, "/api/video/download", fileExtension);
+        // 返回上传响应信息，使用BGM文件的后缀名（mp3）
+        return new UploadResponse(filenameWithoutExtension, "/api/video/download", "mp3");
     }
 
     /**

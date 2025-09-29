@@ -1,5 +1,9 @@
 package com.yang.video.util;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 public class FileNameValidator {
 
     // 添加私有构造函数，防止实例化
@@ -38,6 +42,39 @@ public class FileNameValidator {
             }
         }
         return false;
+    }
+
+    /**
+     * 从文件名中提取日期部分
+     * 文件名格式：YYYY-MM-DD_uuid.ext
+     * 例如：2025-09-29_772f9446-a9f9-4508-9f78-aa0e64222d81.mp3
+     *
+     * @param filename 文件名
+     * @return 日期字符串（YYYY-MM-DD格式），如果无法提取则返回null
+     */
+    public static String extractDateFromFilename(String filename) {
+        if (filename == null || filename.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            // 查找第一个下划线的位置
+            int underscoreIndex = filename.indexOf('_');
+            if (underscoreIndex == -1) {
+                return null;
+            }
+
+            // 提取日期部分（下划线之前的部分）
+            String datePart = filename.substring(0, underscoreIndex);
+            
+            // 验证日期格式是否为 YYYY-MM-DD
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate.parse(datePart, formatter);
+            
+            return datePart;
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 
 }
