@@ -23,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -45,12 +47,10 @@ public class VideoController {
      */
     @PostMapping("/upload")
     @Operation(summary = "上传视频文件", description = "上传单个视频文件，提取BGM并返回BGM文件信息")
-    @ApiResponse(responseCode = "200", description = "上传成功",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Response.class)))
+    @ApiResponse(responseCode = "200", description = "上传成功", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Response.class)))
     @ApiResponse(responseCode = "400", description = "文件为空或非法")
     public ResponseEntity<Response<UploadResponse>> upload(
-            @Parameter(description = "要上传的视频文件", required = true)
-            @RequestParam("file") MultipartFile file) {
+            @Parameter(description = "要上传的视频文件", required = true) @RequestParam("file") MultipartFile file) {
         log.debug("文件上传开始");
 
         if (file.isEmpty()) {
@@ -74,13 +74,11 @@ public class VideoController {
      */
     @GetMapping("/download/{filename}")
     @Operation(summary = "下载视频文件", description = "根据文件名下载已上传的视频文件")
-    @ApiResponse(responseCode = "200", description = "下载成功",
-            content = @Content(mediaType = "application/octet-stream"))
+    @ApiResponse(responseCode = "200", description = "下载成功", content = @Content(mediaType = "application/octet-stream"))
     @ApiResponse(responseCode = "400", description = "文件名不合法")
     @ApiResponse(responseCode = "404", description = "文件不存在")
     public ResponseEntity<?> downloadFile(
-            @Parameter(description = "要下载的文件名", required = true, example = "video_123.mp4")
-            @PathVariable String filename) {
+            @Parameter(description = "要下载的文件名", required = true, example = "video_123.mp4") @PathVariable String filename) {
         // 检查文件名是否合法
         if (!FileNameValidator.isValidFilename(filename)) {
             log.warn("Invalid filename: {}", filename);
@@ -91,7 +89,7 @@ public class VideoController {
             // 从文件名中提取日期
             String dateStr = FileNameValidator.extractDateFromFilename(filename);
             Path filePath;
-            
+
             if (dateStr != null) {
                 // 如果文件名包含日期，则按日期目录结构查找文件
                 // 文件路径：/uploads/2025-09-29/2025-09-29_772f9446-a9f9-4508-9f78-aa0e64222d81.mp3
@@ -102,7 +100,7 @@ public class VideoController {
                 filePath = Paths.get(FILE_DIRECTORY).resolve(filename).normalize();
                 log.debug("File path in root directory: {}", filePath);
             }
-            
+
             Resource resource = new UrlResource(filePath.toUri());
 
             // 检查文件是否存在且可读
@@ -113,7 +111,15 @@ public class VideoController {
 
             // 设置响应头，以指示浏览器下载文件
             log.info("File found and ready for download: {}", filename);
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"").body(resource);
+            // 处理中文/特殊字符文件名（防止浏览器下载乱码）
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20");
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + encodedFilename + "\"; filename*=UTF-8''" + encodedFilename)
+                    .body(resource);
         } catch (MalformedURLException e) {
             // 处理URL异常
             log.warn("Invalid URL: {}", e.getMessage());
