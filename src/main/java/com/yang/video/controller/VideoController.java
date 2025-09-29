@@ -72,7 +72,7 @@ public class VideoController {
      * @param filename 要下载的文件名
      * @return 包含文件的响应体如果请求的文件名不合法或文件不可用，则返回错误响应
      */
-    @GetMapping("/download")
+    @GetMapping("/download/{filename}")
     @Operation(summary = "下载视频文件", description = "根据文件名下载已上传的视频文件")
     @ApiResponse(responseCode = "200", description = "下载成功",
             content = @Content(mediaType = "application/octet-stream"))
@@ -80,7 +80,7 @@ public class VideoController {
     @ApiResponse(responseCode = "404", description = "文件不存在")
     public ResponseEntity<?> downloadFile(
             @Parameter(description = "要下载的文件名", required = true, example = "video_123.mp4")
-            @RequestParam String filename) {
+            @PathVariable String filename) {
         // 检查文件名是否合法
         if (!FileNameValidator.isValidFilename(filename)) {
             log.warn("Invalid filename: {}", filename);
